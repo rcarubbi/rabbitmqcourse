@@ -1,0 +1,42 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+        <div class="row">
+            <div class="col-md-12">
+                <input type="text" class="form-control" id="text" />
+                <button id="send" class="btn btn-success">Enviar</button>
+            </div>
+            <div class="col-md-12" id="answers">
+
+            </div>
+        </div>
+
+@section scripts {
+    <script src="~/Scripts/jquery.signalR-2.4.1.js"></script>
+    <script src="http://localhost:8080/signalr/hubs"></script>
+    <script>
+        let connectionId;
+        $(function () {
+            const url = "http://localhost:8080/signalr/";
+            $.connection.hub.url = url;
+            $.connection.responseMessageHub.client.sendAnswer = function (answer) {
+                const newParagraph = $(`<p>${answer}</p>`);
+                $("#answers").append(newParagraph);
+            }
+
+            $.connection.responseMessageHub.client.getConnectionId = function (newId) {
+                connectionId = newId;
+            }
+
+            $.connection.hub.start().done(() => $("#send").on("click", sendText));
+
+        });
+
+        function sendText() {
+            const text = $("#text").val();
+            $.get("https://localhost:44385/api/message", { text, to: connectionId });
+        }
+
+    </script>
+}
